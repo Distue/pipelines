@@ -1,0 +1,75 @@
+# Snakemake test file
+# -------------------
+# "snakemake mktest" - creates test examples
+#   -> A_lane1.in.txt
+#   -> A_lane2.in.txt
+#   -> B_lane1.in.txt
+#   -> B_lane2.in.txt
+# -------------------
+# "snakemake" - creates output
+#   -> A_lane1.out.txt
+#   -> A_lane2.out.txt
+#   -> B_lane1.out.txt
+#   -> B_lane2.out.txt
+#
+#       ||| 
+#     \ ||| /
+#       \ / 
+#
+#   -> stats.txt
+#   (depends on all four above)
+# ------------------
+# "snakemake clean"
+#    removes all *txt and *log files
+# ------------------
+
+LANES="_lane1 _lane2".split()
+LANE1=LANES[0]
+LANE2=LANES[1]
+SAMPLES="A B".split()
+
+# ===================
+
+rule all:
+  input:
+    "stats.txt"
+
+rule stats:
+  input:
+    expand("{samples}{lanes}.out.txt", samples=SAMPLES, lanes=LANES)
+  output:
+    "stats.txt"
+  message:
+    "creating statistics - {output}"
+  shell:
+    "head {input} > {output}"
+
+rule process:
+  input:
+    "{file}.in.txt"
+  output:
+    "{file}.out.txt"
+  message:
+    "simulating processing {input} to {output}"
+  log:
+    "{file}.out.log"
+  shell:
+    "cp {input} {output} 2> {log}"
+
+rule mktest:
+  input: 
+    expand("{samples}{lanes}.in.txt", samples=SAMPLES, lanes=LANES)
+
+rule do_mktest:
+  output:
+    "{file}.in.txt"
+  message:
+    "creating the test file {output}"
+  shell:
+   "echo '{wildcards.file}' > {output}"
+
+rule clean:
+  message:
+    "cleaning up directory"
+  shell:
+    "rm *txt *log"
