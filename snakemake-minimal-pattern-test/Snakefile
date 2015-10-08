@@ -1,14 +1,18 @@
 # Snakemake test file
 # -------------------
-# Author: Thomas Schwarzl <schwarzl@embl.de>
-# Licence: MIT
-# -------------------
 # "snakemake mktest" - creates test examples
 #   -> A.in.txt
 #   -> B.in.txt
 # -------------------
 # "snakemake" - creates output
+#   -> A.out.txt
+#   -> B.out.txt
+#       ||| 
+#     \ ||| /
+#       \ / 
+#
 #   -> stats.txt
+#   (depends on the two files above)
 # ------------------
 # "snakemake clean"
 #    removes all *txt and *log files
@@ -24,16 +28,25 @@ rule all:
 
 rule stats:
   input:
-    a="A.in.txt",
-    b="B.in.txt"
+    expand("{samples}.out.txt", samples=SAMPLES)
   output:
     "stats.txt"
   message:
     "creating statistics - {output}"
-  log:
-    "stats.log"
   shell:
-    "head {input.a} {input.b} > {output} 2> {log}"
+    "head {input} > {output}"
+
+rule process:
+  input:
+    "{file}.in.txt"
+  output:
+    "{file}.out.txt"
+  message:
+    "simulating processing {input} to {output}"
+  log:
+    "{file}.out.log"
+  shell:
+    "cp {input} {output} 2> {log}"
 
 rule mktest:
   input: 
