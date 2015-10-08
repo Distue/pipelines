@@ -1,0 +1,67 @@
+# Snakemake test file
+# -------------------
+# "snakemake mktest" - creates test examples
+#   -> A.in.txt
+#   -> B.in.txt
+# -------------------
+# "snakemake" - creates output
+#   -> A.out.txt
+#   -> B.out.txt
+#       ||| 
+#     \ ||| /
+#       \ / 
+#
+#   -> stats.txt
+#   (depends on the two files above)
+# ------------------
+# "snakemake clean"
+#    removes all *txt and *log files
+# ------------------
+
+SAMPLES="A B".split()
+
+# ===================
+
+rule all:
+  input:
+    "stats.txt"
+
+rule stats:
+  input:
+    expand("{samples}.out.txt", samples=SAMPLES)
+  output:
+    "stats.txt"
+  message:
+    "creating statistics - {output}"
+  shell:
+    "head {input} > {output}"
+
+rule process:
+  input:
+    "{file}.in.txt"
+  output:
+    "{file}.out.txt"
+  message:
+    "simulating processing {input} to {output}"
+  log:
+    "{file}.out.log"
+  shell:
+    "cp {input} {output} 2> {log}"
+
+rule mktest:
+  input: 
+    expand("{samples}.in.txt", samples=SAMPLES)
+
+rule do_mktest:
+  output:
+    "{file}.in.txt"
+  message:
+    "creating the test file {output}"
+  shell:
+   "echo '{wildcards.file}' > {output}"
+
+rule clean:
+  message:
+    "cleaning up directory"
+  shell:
+    "rm *txt *log"
