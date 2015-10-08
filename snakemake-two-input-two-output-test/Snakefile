@@ -1,0 +1,49 @@
+# Snakemake test for two files in and two files out with pattern
+# ---------------
+# Author: Thomas Schwarzl <schwarzl@embl.de
+# Licence: MIT
+# ---------------
+# "snakemake mktest" ... create testcase
+# "snakemake"   ........ run code
+# "snakemake clean" .... clean *.txt and *.log files 
+# ---------------
+# input files:
+#    - A_lane1.in.txt 
+#    - A_lane2.in.txt
+#    - B_lane1.in.txt
+#    - B_lane2.in.txt
+#   
+# run: 
+#    - processing A_lane1, A_lane2 and B_lane1, B_lane2 in command run
+# ---------------
+
+LANES="_lane1 _lane2".split()
+LANE1=LANES[0]
+LANE2=LANES[1]
+
+SAMPLES="A B".split()
+
+rule all:
+	input:
+		expand("test/{samples}{lanes}.out.txt", samples=SAMPLES, lanes=LANES)
+
+rule run:
+	input:
+		expand("test/{{samples}}{lanes}.in.txt", lanes=LANES)
+	output:
+		expand("test/{{samples}}{lanes}.out.txt", lanes=LANES)
+	message:
+		"simulating a command which requires two input and two output files, input: {input}, output: {output}" 
+	shell:
+		"cp {input[0]} {output[0]} && cp {input[1]} {output[1]}"
+
+rule mktest:
+	output: 
+		dir = "test",
+		files = expand("test/{samples}{lanes}.in.txt", samples=SAMPLES, lanes=LANES)
+	shell:
+		"mkdir -p {output.dir}  && touch {output}"
+
+rule clean:
+	shell:
+		"rm *.txt *.log"
