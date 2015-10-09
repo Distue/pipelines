@@ -24,8 +24,7 @@ rule all:
 
 rule stats:
   input:
-    a="A.in.txt",
-    b="B.in.txt"
+    expand("{sample}.in.txt", sample=SAMPLES)
   output:
     "stats.txt"
   message:
@@ -33,7 +32,7 @@ rule stats:
   log:
     "stats.log"
   shell:
-    "head {input.a} {input.b} > {output} 2> {log}"
+    "head {input} > {output} 2> {log}"
 
 rule mktest:
   input: 
